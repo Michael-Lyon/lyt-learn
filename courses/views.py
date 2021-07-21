@@ -19,13 +19,16 @@ class OwnerMixin(object):
         qs = super(OwnerMixin, self).get_queryset()
         return qs.filter(owner=self.request.user)
 
+
 class OwnerEditMixin(object):
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super(OwnerEditMixin, self).form_valid(form)
 
+
 class OwnerCourseMixin(OwnerMixin, LoginRequiredMixin):
     model = Course
+
 
 class OwnerCourseEditMixin(OwnerEditMixin, OwnerCourseMixin):
     fields = ['subject', 'title', 'slug', 'overview']
@@ -33,24 +36,26 @@ class OwnerCourseEditMixin(OwnerEditMixin, OwnerCourseMixin):
     template_name = 'courses/manage/course/form.html'
 
 
-
-
 # NORMAL CLASS VIEWS
 class ManageCourseListView(OwnerCourseMixin, ListView):
     template_name = 'courses/manage/course/list.html'
 
-class CourseCreateView( PermissionRequiredMixin, OwnerCourseEditMixin,CreateView,):
-    permission_required = 'courses.add_course' 
+
+class CourseCreateView(PermissionRequiredMixin, OwnerCourseEditMixin, CreateView,):
+    permission_required = 'courses.add_course'
+
 
 class CourseUpdateView(OwnerCourseEditMixin, UpdateView, PermissionRequiredMixin):
     permission_required = 'courses.change_course'
+
 
 class CourseDeleteView(OwnerCourseMixin, DeleteView, PermissionRequiredMixin):
     template_name = 'courses/manage/course/delete.html'
     permission_required = 'courses.delete_course'
     success_url = reverse_lazy('course:manage_course_list')
 
-#EDIT MODDULE VIEWS
+
+# EDIT MODDULE VIEWS
 class CourseModuleUpdateView(TemplateResponseMixin, View):
     template_name = 'courses/manage/module/formset.html'
     course = None
@@ -64,14 +69,14 @@ class CourseModuleUpdateView(TemplateResponseMixin, View):
 
     def get(self, request, *args, **kwargs):
         formset = self.get_formset()
-        return self.render_to_response({'course':self.course, 'formset':formset})
+        return self.render_to_response({'course': self.course, 'formset': formset})
 
     def post(self, request, *args, **kwargs):
         formset = self.get_formset(data=request.POST)
         if formset.is_valid():
             formset.save()
             return redirect('course:manage_course_list')
-        return self.render_to_response({'course':self.course, 'formset':formset})
+        return self.render_to_response({'course': self.course, 'formset': formset})
 
 
 # view to add content to modules
@@ -96,14 +101,15 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
 
     def dispatch(self, request, module_id, model_name, id=None):
         self.module = get_object_or_404(Module,
-                                       id=module_id,
-                                       course__owner=request.user)
+                                        id=module_id,
+                                        course__owner=request.user)
         self.model = self.get_model(model_name)
         if id:
             self.obj = get_object_or_404(self.model,
                                          id=id,
                                          owner=request.user)
         return super().dispatch(request, module_id, model_name, id)
+        
 
     def get(self, request, module_id, model_name, id=None):
         form = self.get_form(self.model, instance=self.obj)
@@ -123,7 +129,28 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
                 # new content
                 Content.objects.create(module=self.module,
                                        item=obj)
-            return redirect('module_content_list', self.module.id)
+            return redirect('course:module_content_list', self.module.id)
 
         return self.render_to_response({'form': form,
                                         'object': self.obj})
+
+
+class ContentDeleteView(View):
+
+    def post(self, request, id):
+        content = get_object_or_404(Content, id=id, module__course__owner=request.user)
+
+        module = content.module
+        content.item.delete()
+        content.delete()
+        return redirect('module_content_list', module.id)
+
+
+# VIEWS TO DISPLAY ALL MOUDULES FOR A COURSE AND LIST CONTENTS FOR A SPECIFIC MODULE
+class ModuleContentListView(TemplateResponseMixin, View):
+    template_name = 'courses/manage/module/content_list.html'
+
+    def get(self, request, module_id):
+        module = get_object_or_404(Module, id=module_id, course__owner=request.user)
+
+        return self.render_to_response({'module':module})
