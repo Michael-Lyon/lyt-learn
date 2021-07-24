@@ -2,6 +2,7 @@ from django.forms.forms import Form
 from courses.forms import ModuleFormSet
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.generic.list import ListView
+from django.views.generic.detail import DetailView
 from .models import Course
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView, DeleteView
@@ -9,7 +10,11 @@ from django.views.generic.base import TemplateResponseMixin, View
 from django.contrib.auth.mixins import LoginRequiredMixin, PermissionRequiredMixin
 from django.forms.models import modelform_factory
 from django.apps import apps
+# the mixins below allows for a post request with Ajax to avoid requesting new csrf and json response on same page
+from braces.views import CsrfExemptMixin, JsonRequestResponseMixin
 from .models import Module, Content
+from django.db.models import Count
+from .models import Subject
 # Create your views here.
 
 
@@ -109,7 +114,6 @@ class ContentCreateUpdateView(TemplateResponseMixin, View):
                                          id=id,
                                          owner=request.user)
         return super().dispatch(request, module_id, model_name, id)
-        
 
     def get(self, request, module_id, model_name, id=None):
         form = self.get_form(self.model, instance=self.obj)
@@ -143,7 +147,7 @@ class ContentDeleteView(View):
         module = content.module
         content.item.delete()
         content.delete()
-        return redirect('module_content_list', module.id)
+        return redirect('course:module_content_list', module.id)
 
 
 # VIEWS TO DISPLAY ALL MOUDULES FOR A COURSE AND LIST CONTENTS FOR A SPECIFIC MODULE
@@ -153,4 +157,42 @@ class ModuleContentListView(TemplateResponseMixin, View):
     def get(self, request, module_id):
         module = get_object_or_404(Module, id=module_id, course__owner=request.user)
 
-        return self.render_to_response({'module':module})
+        return self.render_to_response({'module': module})
+
+
+# VIEW TO ORDER MODULE IN THE SAME PAGE USING AJAX
+class ModuleOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
+    def post(self, request):
+        for id, order in self.request_json.items():
+            Module.objects.filter(id=id, course__owner=request.user).update(order=order)
+        return self.render_json_response({'saved': 'OK'})
+
+
+class ContentOrderView(CsrfExemptMixin, JsonRequestResponseMixin, View):
+    def post(self, request):
+        for id, order in self.request_json.items():
+            Content.objects.filter(id=id, module__course__owner=request.user).update(order=order)
+        return self.render_json_response({'saved': 'OK'})
+
+
+# LISTING COURSE FOR STUDENT VIEW
+class CourseListView(TemplateResponseMixin, View):
+    model = Course
+    template_name = 'courses/course/list.html'
+
+    def get(self, request, subject=None):
+        subjects = Subject.objects.annotate(total_courses=Count('courses'))
+        courses = Course.objects.annotate(total_modules=Count('modules'))
+
+        if subject:
+            subject = get_object_or_404(Subject, slug=subject)
+            courses = courses.filter(subject=subject)
+        return self.render_to_response({'subjects': subjects,
+                                        'subject': subject,
+                                        'courses': courses})
+
+# VIEW TO DISPLAY A COURSE OVERVIEW
+
+class CourseDetailView(DetailView):
+    model = Course
+    template_name = 'courses/course/detail.html'
