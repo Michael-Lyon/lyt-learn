@@ -1,4 +1,6 @@
 from django.db import models
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
 from django.db.models import fields, query
 from django.db.models.deletion import CASCADE
@@ -26,6 +28,7 @@ class Course(models.Model):
     slug = models.SlugField(max_length=200, unique=True)
     overview = models.TextField()
     created = models.DateTimeField(auto_now_add=True)
+    students = models.ManyToManyField(User, related_name='courses_joined', blank=True)
 
     class Meta:
         ordering = ['-created']
@@ -61,6 +64,7 @@ class Content(models.Model):
         ordering = ['order']  # default ordering
 
 
+# ABSTRACT CLASS
 class ItemBase(models.Model):
     owner = models.ForeignKey(User, related_name='%(class)s_related', on_delete=models.CASCADE)
     title = models.CharField(max_length=250)
@@ -70,6 +74,8 @@ class ItemBase(models.Model):
     class Meta:
         abstract = True
 
+    def render(self):
+        return render_to_string('courses/content/{}.html'.format(self._meta.model_name), {'item':self})
     def __str__(self):
         return self.title
 
@@ -88,3 +94,6 @@ class Image(ItemBase):
 
 class Video(ItemBase):
     url = models.URLField()
+
+
+
