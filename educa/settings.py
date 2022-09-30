@@ -18,7 +18,9 @@ SECRET_KEY = 'bj0#2v-5jd4k@sw_o3ngop-n*9b(d(7f3h@tbw$-x21x_ey+1^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    'pygod-learn.herokuapp.com', '*'
+]
 
 
 # Application definition
