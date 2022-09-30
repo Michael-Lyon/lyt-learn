@@ -1,12 +1,13 @@
-from django.db import models
-from django.template.loader import render_to_string
-from django.utils.safestring import mark_safe
 from django.contrib.auth.models import User
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
 from django.db.models import fields, query
 from django.db.models.deletion import CASCADE
 from django.db.models.expressions import OrderBy
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.contenttypes.fields import GenericForeignKey
+from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
+
 from .fields import OrderField
 
 

@@ -1,6 +1,8 @@
 # FORMS TO ALLOW STUDENTS ENROLL IN COURSE
-from django import forms 
+from django import forms
+
 from courses.models import Course
+
 
 class CourseEnrollForm(forms.Form):
     course = forms.ModelChoiceField(queryset=Course.objects.all(), widget=forms.HiddenInput)

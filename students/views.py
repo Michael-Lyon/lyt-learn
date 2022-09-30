@@ -1,18 +1,17 @@
 from django.contrib import auth
-from django.forms.forms import Form
-from django.shortcuts import render
-from django.views.generic.edit import CreateView
-from django.urls import reverse_lazy
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.forms import UserCreationForm
-from django.views.generic.edit import FormView
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .forms import CourseEnrollForm
-from django.views.generic.list import ListView
+from django.forms.forms import Form
+from django.shortcuts import render
+from django.urls import reverse_lazy
 from django.views.generic.detail import DetailView
-from courses.models import Course 
+from django.views.generic.edit import CreateView, FormView
+from django.views.generic.list import ListView
 
+from courses.models import Course
 
+from .forms import CourseEnrollForm
 
 
 #VIEW FOR CREATING STUDENT
@@ -46,14 +45,14 @@ class StudentEnrollCourseView(LoginRequiredMixin, FormView):
         return reverse_lazy('students:student_course_detail', args=[self.course.id])
 
 
+
 class StudentCourseListView(LoginRequiredMixin, ListView):
     model = Course
     template_name = 'students/course/list.html'
 
     def get_queryset(self):
-        qs = super(StudentCourseListView, self).get_quesryset()
+        qs = super().get_queryset()
         return qs.filter(students__in=[self.request.user])
-
 
 class StudentCourseDetailView(DetailView):
     model = Course
@@ -73,5 +72,6 @@ class StudentCourseDetailView(DetailView):
             context['module'] = course.modules.get(id=self.kwargs['module_id'])
         else:
             # get first module
-            context['module'] = course.modules.all()[0]
+            # context['module'] = course.modules.all()[0]
+            context['module'] = course.modules.all()
         return context

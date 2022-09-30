@@ -16,11 +16,16 @@
             </p>
             {{ object.overview|linebreaks }}
             {% if request.user.is_authenticated %}
+                {% if banger %}
+                 <p class="button"><a href="{% url "students:student_course_detail" course.id %}">
+                Access contents</a></p>
+                {% else %}
                 <form action="{% url "students:student_enroll_course" %}" method="post">
                     {{ enroll_form }}
                     {% csrf_token %}
-                    <input type="submit" class="button" value="Enroll now">
+                    <input type="sub mit" class="button" value="Enroll now">
                 </form>
+                {% endif %}
                 {% else %}
                     <a href="{% url "students:student_registration" %}" class="button">
                     Register to enroll

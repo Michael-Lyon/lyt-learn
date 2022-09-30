@@ -1,9 +1,12 @@
 import os
+from pathlib import Path
 from django.urls import reverse_lazy
-from django.urls.base import reverse
+from django.urls.base import reverse_lazy
+import django_heroku
+import cloudinary
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
@@ -28,17 +31,23 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'courses',
+    'chat',
     'students',
+    'channels',
     'embed_video',
     'memcache_status',
     'rest_framework',
-    
+    'cloudinary',
+    'cloudinary_storage',
+
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    # 'django.middleware.cache.UpdateCacheMiddleware',
     'django.middleware.common.CommonMiddleware',
+    # 'django.middleware.cache.FetchFromCacheMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -76,7 +85,6 @@ DATABASES = {
     }
 }
 
- 
 
 # CACHE SETTINGS
 SESSIONS_ENGINE = 'django.contrib.sessions.backends.cache'
@@ -84,9 +92,13 @@ SESSIONS_ENGINE = 'django.contrib.sessions.backends.cache'
 CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-        'LOCATION': '127.0.0.1:11212',
+        'LOCATION': '127.0.0.1:11211',
     }
 }
+
+CACHE_MIDDLEWARE_ALIAS = 'default'
+CACHE_MIDDLEWARE_SECONDS = 60 * 15  # 15 minutes
+CACHE_MIDDLEWARE_KEY_PREFIX = 'educa'
 
 # REST-FRAME-WORK SETTONGS
 REST_FRAMEWORK = {
@@ -132,8 +144,83 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, "staticfiles"),
+)
 
 
-LOGIN_REDIRECT_URL = reverse_lazy('students:students_course_list')
+LOGIN_REDIRECT_URL = reverse_lazy('students:student_course_list')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly']
+}
+
+django_heroku.settings(locals())
+
+ASGI_APPLICATION = "educa.routing.application"
+# ASGI_APPLICATION = "educa.asgi.application"
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            'hosts': [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': "[%(asctime)s] %(levelname)s [%(name)s:%(lineno)s] %(message)s",
+            'datefmt': "%d/%b/%Y %H:%M:%S"
+        },
+        'simple': {
+            'format': '%(levelname)s %(message)s'
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': 'mysite.log',
+            'formatter': 'verbose'
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'propagate': True,
+            'level': 'DEBUG',
+        },
+        'MYAPP': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+        },
+    }
+}
+
+
+cloudinary.config(
+    cloud_name="dzy2mpv8w",
+    api_key="896867796834272",
+    api_secret="1OUOyOgQSrNta8J9In3Go8BkgN0"
+)
+
+
+CLOUDINARY_URL = "cloudinary://896867796834272:1OUOyOgQSrNta8J9In3Go8BkgN0@dzy2mpv8w"
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': "dzy2mpv8w",
+    'API_KEY':  "896867796834272",
+    'API_SECRET':  "1OUOyOgQSrNta8J9In3Go8BkgN0",
+}
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
