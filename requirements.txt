@@ -10,6 +10,7 @@ channels==2.4.0
 channels-redis==2.4.2
 charset-normalizer==2.1.1
 constantly==15.1.0
+cloudinary
 cryptography==38.0.1
 # daphne==2.4.1
 Django==4.1.1
@@ -17,6 +18,7 @@ django-braces==1.15.0
 django-embed-video==1.4.5
 django-filter==22.1
 django-heroku
+django-cloudinary-storage
 django-memcache-status==1.3
 djangorestframework==3.13.1
 gunicorn
