@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+
 ROOT_URLCONF = 'educa.urls'
 
 TEMPLATES = [
