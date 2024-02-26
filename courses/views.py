@@ -36,8 +36,7 @@ class OwnerEditMixin(object):
         return super().form_valid(form)
 
 
-class OwnerCourseMixin(OwnerMixin,
-                       LoginRequiredMixin,):
+class OwnerCourseMixin(OwnerMixin, LoginRequiredMixin,):
                     #    PermissionRequiredMixin):
     model = Course
     fields = ['subject', 'title', 'slug', 'overview']
@@ -190,7 +189,7 @@ class CourseListView(TemplateResponseMixin, View):
     template_name = 'courses/course/list.html'
 
     def get(self, request, subject=None):
-        
+
         subjects = cache.get('all_subjects')
         if not subjects:
             subjects = Subject.objects.annotate(total_courses=Count('courses'))

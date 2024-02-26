@@ -18,9 +18,7 @@ SECRET_KEY = 'bj0#2v-5jd4k@sw_o3ngop-n*9b(d(7f3h@tbw$-x21x_ey+1^'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = [
-    'pygod-learn.herokuapp.com', '*'
-]
+ALLOWED_HOSTS = ['localhost', "educa-pygod.up.railway.app"]
 
 
 # Application definition
@@ -94,8 +92,8 @@ SESSIONS_ENGINE = 'django.contrib.sessions.backends.cache'
 
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.memcached.PyMemcacheCache',
-        'LOCATION': '127.0.0.1:11211',
+        'BACKEND': "django.core.cache.backends.redis.RedisCache",
+        'LOCATION': "redis://default:IKPdhoJgm4hOmDfNOmMEFblcPfbKoNjD@monorail.proxy.rlwy.net:43443",
     }
 }
 
@@ -147,11 +145,13 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "staticfiles"),
-)
+# Define the directory where static files are collected.
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
+# Specify additional directories to collect static files from.
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "static"),
+]
 
 LOGIN_REDIRECT_URL = reverse_lazy('students:student_course_list')
 MEDIA_URL = '/media/'
@@ -163,7 +163,7 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly']
 }
 
-django_heroku.settings(locals())
+# django_heroku.settings(locals())
 
 ASGI_APPLICATION = "educa.routing.application"
 # ASGI_APPLICATION = "educa.asgi.application"
@@ -172,7 +172,7 @@ CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            'hosts': [('127.0.0.1', 6379)],
+            'hosts': ["redis://default:IKPdhoJgm4hOmDfNOmMEFblcPfbKoNjD@monorail.proxy.rlwy.net:43443"],
         },
     },
 }
@@ -212,18 +212,18 @@ LOGGING = {
 }
 
 
-cloudinary.config(
-    cloud_name="dzy2mpv8w",
-    api_key="896867796834272",
-    api_secret="1OUOyOgQSrNta8J9In3Go8BkgN0"
-)
+# cloudinary.config(
+#     cloud_name="dzy2mpv8w",
+#     api_key="896867796834272",
+#     api_secret="1OUOyOgQSrNta8J9In3Go8BkgN0"
+# )
 
 
-CLOUDINARY_URL = "cloudinary://896867796834272:1OUOyOgQSrNta8J9In3Go8BkgN0@dzy2mpv8w"
+# CLOUDINARY_URL = "cloudinary://896867796834272:1OUOyOgQSrNta8J9In3Go8BkgN0@dzy2mpv8w"
 
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': "dzy2mpv8w",
-    'API_KEY':  "896867796834272",
-    'API_SECRET':  "1OUOyOgQSrNta8J9In3Go8BkgN0",
-}
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+# CLOUDINARY_STORAGE = {
+#     'CLOUD_NAME': "dzy2mpv8w",
+#     'API_KEY':  "896867796834272",
+#     'API_SECRET':  "1OUOyOgQSrNta8J9In3Go8BkgN0",
+# }
+# DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
