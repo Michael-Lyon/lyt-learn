@@ -17,10 +17,10 @@ urlpatterns = [
     path('chat/', include('chat.urls', namespace='chat')),
     path('admin/', admin.site.urls),
     path('', CourseListView.as_view(), name="course_list"),
-    # re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-    # re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
+    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^static/(?P<path>.*)$', serve, {'document_root': settings.STATIC_ROOT}),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL,
-                      document_root=settings.MEDIA_ROOT)
+                    document_root=settings.MEDIA_ROOT)
